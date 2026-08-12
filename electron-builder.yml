@@ -1,0 +1,14 @@
+appId: com.diagrama.app
+productName: Diagrama
+directories:
+  buildResources: resources
+  output: release
+files:
+  - out/**/*
+  - package.json
+win:
+  target: nsis
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  artifactName: DiagramaSetup.exe
