@@ -1,6 +1,6 @@
 {
   "name": "diagrama",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Gerador de diagramas de rede com IA (Electron)",
   "main": "./out/main/index.js",
   "author": "",

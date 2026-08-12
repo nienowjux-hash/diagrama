@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Trash2, Copy } from 'lucide-react'
 import { useDiagramStore } from '../state/diagramStore'
 import { deviceTypeConfig } from '../lib/deviceTypeConfig'
@@ -24,6 +25,17 @@ export default function NodePropertiesPanel() {
   const updateDevice = useDiagramStore((s) => s.updateDevice)
   const removeDevice = useDiagramStore((s) => s.removeDevice)
   const duplicateDevice = useDiagramStore((s) => s.duplicateDevice)
+
+  // The VLANs field is comma-separated free text, but its committed value is
+  // a parsed number[] — deriving the input's `value` straight from that
+  // array (re-joined) collapses "10," back to "10" on every keystroke,
+  // making it impossible to ever type past a comma. Track the raw text
+  // locally instead, and only resync it from the model when the *selection*
+  // changes (not on every store update caused by this same field typing).
+  const [vlanText, setVlanText] = useState('')
+  useEffect(() => {
+    setVlanText(node?.data.metadata.vlanIds?.join(', ') ?? '')
+  }, [selectedNodeId])
 
   const multiSelectCount = nodes.filter((n) => n.selected).length
   if (!selectedNodeId || !node || multiSelectCount > 1) return null
@@ -148,9 +160,10 @@ export default function NodePropertiesPanel() {
           <label className="field">
             <span>VLANs (separadas por vírgula)</span>
             <input
-              value={data.metadata.vlanIds?.join(', ') ?? ''}
+              value={vlanText}
               placeholder="ex: 10, 20"
               onChange={(e) => {
+                setVlanText(e.target.value)
                 const vlanIds = e.target.value
                   .split(',')
                   .map((v) => parseInt(v.trim(), 10))
