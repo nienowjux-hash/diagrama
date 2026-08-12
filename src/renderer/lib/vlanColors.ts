@@ -16,7 +16,22 @@ export const VPN_EDGE_COLOR = '#7c3aed'
 export const TRUNK_EDGE_COLOR = '#818cf8'
 export const WIRELESS_EDGE_COLOR = '#38bdf8'
 
+/**
+ * Multiplicative hash (Murmur3-style finalizer) so the palette index doesn't
+ * track the input's base-10 digits directly. A plain `vlanId % length` looks
+ * fine until you remember real-world VLAN numbering is almost always round
+ * multiples of 10 (10/20/30/40...) — with a 10-color palette that collapsed
+ * every single one of them onto the exact same color (index 0), the one
+ * case the whole feature exists for.
+ */
+function hashVlanId(vlanId: number): number {
+  let h = vlanId | 0
+  h = Math.imul(h ^ (h >>> 16), 2654435761)
+  h = Math.imul(h ^ (h >>> 13), 2246822519)
+  h ^= h >>> 16
+  return h >>> 0
+}
+
 export function colorForVlan(vlanId: number): string {
-  const index = ((vlanId % VLAN_PALETTE.length) + VLAN_PALETTE.length) % VLAN_PALETTE.length
-  return VLAN_PALETTE[index]
+  return VLAN_PALETTE[hashVlanId(vlanId) % VLAN_PALETTE.length]
 }
