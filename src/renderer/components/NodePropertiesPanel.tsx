@@ -5,6 +5,9 @@ import { deviceTypeConfig } from '../lib/deviceTypeConfig'
 import { DEVICE_PRESETS } from '../lib/devicePresets'
 import { iconKeyFor } from '../lib/deviceIcons'
 import type { DeviceNodeData } from '@shared/types'
+import { isRealDevice } from '@shared/types'
+
+const SHAPE_TYPES = ['rectangle', 'ellipse', 'line', 'text'] as const
 
 const DEFAULT_FONT_SIZE = 13
 
@@ -42,22 +45,18 @@ export default function NodePropertiesPanel() {
   const data = node.data
   const isImage = data.type === 'image'
   const isGroup = data.type === 'group'
+  const isShape = (SHAPE_TYPES as readonly string[]).includes(data.type)
+  const isLine = data.type === 'line'
 
   const ip = data.metadata.ip?.trim()
   const ipConflict = ip
-    ? nodes.find(
-        (n) =>
-          n.id !== selectedNodeId &&
-          n.data.type !== 'image' &&
-          n.data.type !== 'group' &&
-          n.data.metadata.ip?.trim() === ip
-      )
+    ? nodes.find((n) => n.id !== selectedNodeId && isRealDevice(n.data.type) && n.data.metadata.ip?.trim() === ip)
     : undefined
 
   return (
     <div className="properties-panel">
       <div className="properties-panel__header">
-        <span>{isImage ? 'Imagem' : isGroup ? 'Grupo' : 'Dispositivo'}</span>
+        <span>{isImage ? 'Imagem' : isGroup ? 'Grupo' : isShape ? deviceTypeConfig[data.type].label : 'Dispositivo'}</span>
         <div style={{ display: 'flex', gap: 4 }}>
           <button
             type="button"
@@ -78,10 +77,12 @@ export default function NodePropertiesPanel() {
         </div>
       </div>
 
-      <label className="field">
-        <span>{isImage ? 'Legenda (opcional)' : 'Nome'}</span>
-        <input value={data.label} onChange={(e) => updateDevice(selectedNodeId, { label: e.target.value })} />
-      </label>
+      {!isLine && (
+        <label className="field">
+          <span>{isImage ? 'Legenda (opcional)' : 'Nome'}</span>
+          <input value={data.label} onChange={(e) => updateDevice(selectedNodeId, { label: e.target.value })} />
+        </label>
+      )}
 
       {isGroup ? (
         <>
@@ -114,6 +115,68 @@ export default function NodePropertiesPanel() {
         <div className="modal__status">
           Arraste os cantos da imagem no canvas para redimensionar.
         </div>
+      ) : isShape ? (
+        <>
+          <label className="field">
+            <span>Cor</span>
+            <div className="color-field">
+              <input
+                type="color"
+                value={data.color ?? deviceTypeConfig[data.type].color}
+                onChange={(e) => updateDevice(selectedNodeId, { color: e.target.value })}
+              />
+              {data.color && (
+                <button
+                  type="button"
+                  className="link-button"
+                  onClick={() => updateDevice(selectedNodeId, { color: undefined })}
+                >
+                  padrão
+                </button>
+              )}
+            </div>
+          </label>
+
+          {isLine && (
+            <>
+              <label className="field">
+                <span>Espessura (px)</span>
+                <input
+                  type="number"
+                  min={1}
+                  max={20}
+                  value={data.strokeWidth ?? 3}
+                  onChange={(e) =>
+                    updateDevice(selectedNodeId, { strokeWidth: parseInt(e.target.value, 10) || 1 })
+                  }
+                />
+              </label>
+              <label className="field field--inline">
+                <input
+                  type="checkbox"
+                  checked={data.arrow ?? false}
+                  onChange={(e) => updateDevice(selectedNodeId, { arrow: e.target.checked })}
+                />
+                <span>Seta na ponta</span>
+              </label>
+            </>
+          )}
+
+          {data.type === 'text' && (
+            <label className="field">
+              <span>Tamanho da fonte (px)</span>
+              <input
+                type="number"
+                min={9}
+                max={72}
+                value={data.fontSize ?? 16}
+                onChange={(e) => updateDevice(selectedNodeId, { fontSize: parseInt(e.target.value, 10) || 16 })}
+              />
+            </label>
+          )}
+
+          <div className="modal__status">Arraste os cantos no canvas para redimensionar.</div>
+        </>
       ) : (
         <>
           <label className="field">

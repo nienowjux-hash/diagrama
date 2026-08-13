@@ -25,16 +25,23 @@ describe('buildInventoryCsv', () => {
     expect(csv).toContain('Servidor AD;Servidor;Dell R440;192.168.1.10')
   })
 
-  it('excludes image and group nodes from the inventory', () => {
+  it('excludes decorative nodes (image, group, and drawing shapes) from the inventory', () => {
     const csv = buildInventoryCsv(
       baseDiagram({
         devices: [
           { id: '1', type: 'image', label: '', position: { x: 0, y: 0 }, metadata: {} },
-          { id: '2', type: 'group', label: 'Rack 1', position: { x: 0, y: 0 }, metadata: {} }
+          { id: '2', type: 'group', label: 'Rack 1', position: { x: 0, y: 0 }, metadata: {} },
+          { id: '3', type: 'rectangle', label: 'Caixa', position: { x: 0, y: 0 }, metadata: {} },
+          { id: '4', type: 'ellipse', label: 'Bolha', position: { x: 0, y: 0 }, metadata: {} },
+          { id: '5', type: 'line', label: '', position: { x: 0, y: 0 }, metadata: {} },
+          { id: '6', type: 'text', label: 'Anotação', position: { x: 0, y: 0 }, metadata: {} }
         ]
       })
     )
     expect(csv).not.toContain('Rack 1')
+    expect(csv).not.toContain('Caixa')
+    expect(csv).not.toContain('Bolha')
+    expect(csv).not.toContain('Anotação')
     const lines = csv.split('\r\n').filter((l) => l.trim().length > 0)
     expect(lines).toHaveLength(1) // just the header row
   })

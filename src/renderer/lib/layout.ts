@@ -1,6 +1,6 @@
 import dagre from '@dagrejs/dagre'
 import type { Node, Edge } from '@xyflow/react'
-import type { DeviceNodeData, ConnectionEdgeData } from '@shared/types'
+import { isRealDevice, type DeviceNodeData, type ConnectionEdgeData } from '@shared/types'
 
 const NODE_WIDTH = 210
 const NODE_HEIGHT = 84
@@ -16,13 +16,14 @@ export function layoutDiagram(
   nodes: Node<DeviceNodeData>[],
   edges: Edge<ConnectionEdgeData>[]
 ): Node<DeviceNodeData>[] {
-  // Images and group frames are decorative/reference elements, not part of the
-  // network topology — leave them wherever the user placed them instead of
-  // pulling them into the graph. Devices parented to a group are skipped too:
-  // dagre would compute an absolute-space position for them, but their
-  // `position` is relative to the group once grouped, so writing dagre's
-  // result there would fling them far from their group frame.
-  const layoutable = nodes.filter((n) => n.data.type !== 'image' && n.data.type !== 'group' && !n.data.groupId)
+  // Images, group frames, and drawing shapes are decorative/reference
+  // elements, not part of the network topology — leave them wherever the
+  // user placed them instead of pulling them into the graph. Devices
+  // parented to a group are skipped too: dagre would compute an
+  // absolute-space position for them, but their `position` is relative to
+  // the group once grouped, so writing dagre's result there would fling them
+  // far from their group frame.
+  const layoutable = nodes.filter((n) => isRealDevice(n.data.type) && !n.data.groupId)
 
   const scale = layoutable.length > 40 ? 1.6 : layoutable.length > 20 ? 1.3 : 1
   const graph = new dagre.graphlib.Graph()

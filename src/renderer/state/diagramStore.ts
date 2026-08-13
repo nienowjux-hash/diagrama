@@ -22,6 +22,7 @@ const STREAM_GRID_STEP_Y = 130
 
 type DeviceNode = Node<DeviceNodeData>
 type ConnectionEdge = Edge<ConnectionEdgeData>
+type ShapeType = 'rectangle' | 'ellipse' | 'line' | 'text'
 
 interface DiagramState {
   nodes: DeviceNode[]
@@ -49,6 +50,7 @@ interface DiagramState {
   ) => void
   addImageNode: (imageDataUrl: string, position?: { x: number; y: number }) => void
   addGroupNode: (position?: { x: number; y: number }) => void
+  addShapeNode: (type: ShapeType, position?: { x: number; y: number }) => void
   duplicateDevice: (id: string) => void
   updateDevice: (id: string, partial: Partial<Omit<DeviceNodeData, 'id'>>) => void
   updateManyDevices: (ids: string[], partial: Partial<Omit<DeviceNodeData, 'id'>>) => void
@@ -295,6 +297,24 @@ export const useDiagramStore = create<DiagramState>((set, get) => ({
     // every other node — group boxes are meant to visually frame devices
     // placed over them, not cover them.
     set({ nodes: [deviceNodeFromData(data), ...get().nodes] })
+  },
+  addShapeNode: (type, position = { x: 100, y: 100 }) => {
+    commitHistory(get, set, true)
+    const defaultSize =
+      type === 'line'
+        ? { width: 160, height: 2 }
+        : type === 'text'
+          ? { width: 140, height: 32 }
+          : { width: 140, height: 100 }
+    const data: DeviceNodeData = {
+      id: uuid(),
+      type,
+      label: type === 'text' ? 'Texto' : '',
+      position,
+      metadata: {},
+      size: defaultSize
+    }
+    set({ nodes: [...get().nodes, deviceNodeFromData(data)] })
   },
 
   duplicateDevice: (id) => {

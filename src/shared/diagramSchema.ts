@@ -24,7 +24,11 @@ export const deviceTypeSchema = z.enum([
   'cloud',
   'generic',
   'image',
-  'group'
+  'group',
+  'rectangle',
+  'ellipse',
+  'line',
+  'text'
 ])
 
 export const connectionTypeSchema = z.enum(['ethernet', 'trunk', 'vpn', 'wireless'])
@@ -48,7 +52,9 @@ export const deviceNodeSchema = z.object({
   fontSize: z.number().optional(),
   size: z.object({ width: z.number(), height: z.number() }).optional(),
   imageDataUrl: z.string().optional(),
-  groupId: z.string().optional()
+  groupId: z.string().optional(),
+  strokeWidth: z.number().optional(),
+  arrow: z.boolean().optional()
 })
 
 export const connectionEdgeSchema = z.object({

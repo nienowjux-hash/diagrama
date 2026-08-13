@@ -53,10 +53,11 @@ describe('diagramSchema', () => {
 })
 
 describe('deviceTypeSchema', () => {
-  it('includes both manual-only types alongside the 8 LLM-facing ones', () => {
-    expect(deviceTypeSchema.options).toContain('image')
-    expect(deviceTypeSchema.options).toContain('group')
-    expect(deviceTypeSchema.options).toHaveLength(10)
+  it('includes all manual-only decorative types alongside the 8 LLM-facing ones', () => {
+    for (const type of ['image', 'group', 'rectangle', 'ellipse', 'line', 'text']) {
+      expect(deviceTypeSchema.options).toContain(type)
+    }
+    expect(deviceTypeSchema.options).toHaveLength(14)
   })
 })
 

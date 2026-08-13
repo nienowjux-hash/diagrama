@@ -1,13 +1,21 @@
 import { useMemo, useRef, useState, type ChangeEvent } from 'react'
-import { Image as ImageIcon, SquaresFour } from '@phosphor-icons/react'
+import { Image as ImageIcon, SquaresFour, Square, Circle, LineSegment, TextT } from '@phosphor-icons/react'
 import { useDiagramStore } from '../state/diagramStore'
 import { DEVICE_PRESETS, presetColor, presetIcon } from '../lib/devicePresets'
 import { deviceTypeConfig } from '../lib/deviceTypeConfig'
+
+const SHAPE_BUTTONS = [
+  { type: 'rectangle', label: 'Retângulo', icon: Square, title: 'Adicionar retângulo' },
+  { type: 'ellipse', label: 'Elipse', icon: Circle, title: 'Adicionar elipse/círculo' },
+  { type: 'line', label: 'Linha', icon: LineSegment, title: 'Adicionar linha (arraste os cantos p/ mudar o ângulo)' },
+  { type: 'text', label: 'Texto', icon: TextT, title: 'Adicionar texto livre' }
+] as const
 
 export default function DevicePalette() {
   const addDevice = useDiagramStore((s) => s.addDevice)
   const addImageNode = useDiagramStore((s) => s.addImageNode)
   const addGroupNode = useDiagramStore((s) => s.addGroupNode)
+  const addShapeNode = useDiagramStore((s) => s.addShapeNode)
   const nodeCount = useDiagramStore((s) => s.nodes.length)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [filter, setFilter] = useState('')
@@ -70,6 +78,11 @@ export default function DevicePalette() {
             </button>
           )
         })}
+      </div>
+      {filteredPresets.length === 0 && <div className="device-palette__empty">Nenhum resultado.</div>}
+
+      <div className="device-palette__title">Formas e anotações</div>
+      <div className="device-palette__grid">
         <button
           type="button"
           className="device-palette__item"
@@ -88,8 +101,22 @@ export default function DevicePalette() {
           <SquaresFour size={16} color={groupColor} weight="duotone" />
           <span>Grupo</span>
         </button>
+        {SHAPE_BUTTONS.map((shape) => {
+          const Icon = shape.icon
+          return (
+            <button
+              key={shape.type}
+              type="button"
+              className="device-palette__item"
+              title={shape.title}
+              onClick={() => addShapeNode(shape.type, nextPosition())}
+            >
+              <Icon size={16} color={deviceTypeConfig[shape.type].color} weight="duotone" />
+              <span>{shape.label}</span>
+            </button>
+          )
+        })}
       </div>
-      {filteredPresets.length === 0 && <div className="device-palette__empty">Nenhum resultado.</div>}
       <input
         ref={fileInputRef}
         type="file"

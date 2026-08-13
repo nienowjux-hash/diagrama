@@ -58,6 +58,84 @@ export default function DeviceNode({ id, data, selected }: NodeProps<DeviceNodeT
     )
   }
 
+  if (data.type === 'rectangle' || data.type === 'ellipse') {
+    const stroke = data.color ?? config.color
+    return (
+      <div
+        className={`shape-node shape-node--${data.type}${selected ? ' shape-node--selected' : ''}`}
+        style={{ ...(data.size ?? {}), ['--shape-color' as string]: stroke }}
+      >
+        <NodeResizer
+          isVisible={selected}
+          minWidth={40}
+          minHeight={30}
+          lineStyle={{ pointerEvents: 'none' }}
+          onResizeEnd={(_e, params) => updateDevice(id, { size: { width: params.width, height: params.height } })}
+        />
+        {data.label && <div className="shape-node__label">{data.label}</div>}
+      </div>
+    )
+  }
+
+  if (data.type === 'line') {
+    const stroke = data.color ?? config.color
+    const strokeWidth = data.strokeWidth ?? 3
+    const w = data.size?.width ?? 160
+    const h = data.size?.height ?? 2
+    const markerId = `line-arrow-${id}`
+    return (
+      <div
+        className={`shape-node--line-wrap${selected ? ' shape-node--selected' : ''}`}
+        style={{ width: w, height: h }}
+      >
+        <NodeResizer
+          isVisible={selected}
+          minWidth={20}
+          minHeight={1}
+          lineStyle={{ pointerEvents: 'none' }}
+          onResizeEnd={(_e, params) => updateDevice(id, { size: { width: params.width, height: params.height } })}
+        />
+        <svg className="shape-node__line-svg" width={w} height={h}>
+          {data.arrow && (
+            <defs>
+              <marker id={markerId} markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                <path d="M0,0 L8,4 L0,8 Z" fill={stroke} />
+              </marker>
+            </defs>
+          )}
+          <line
+            x1={0}
+            y1={0}
+            x2={w}
+            y2={h}
+            stroke={stroke}
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+            markerEnd={data.arrow ? `url(#${markerId})` : undefined}
+          />
+        </svg>
+      </div>
+    )
+  }
+
+  if (data.type === 'text') {
+    return (
+      <div
+        className={`shape-node--text${selected ? ' shape-node--selected' : ''}`}
+        style={{ ...(data.size ?? {}), color: data.color ?? config.color, fontSize: data.fontSize ?? 16 }}
+      >
+        <NodeResizer
+          isVisible={selected}
+          minWidth={30}
+          minHeight={20}
+          lineStyle={{ pointerEvents: 'none' }}
+          onResizeEnd={(_e, params) => updateDevice(id, { size: { width: params.width, height: params.height } })}
+        />
+        {data.label || 'Texto'}
+      </div>
+    )
+  }
+
   if (data.type === 'image') {
     return (
       <div className="device-node device-node--image" style={data.size}>

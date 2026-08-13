@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Trash2 } from 'lucide-react'
 import { useDiagramStore } from '../state/diagramStore'
+import { isRealDevice } from '@shared/types'
 
 /**
  * Shown instead of NodePropertiesPanel when more than one device is selected
@@ -17,7 +18,7 @@ export default function BatchEditPanel() {
   const removeDevice = useDiagramStore((s) => s.removeDevice)
   const [vlanInput, setVlanInput] = useState('')
 
-  const selected = nodes.filter((n) => n.selected && n.data.type !== 'image' && n.data.type !== 'group')
+  const selected = nodes.filter((n) => n.selected && isRealDevice(n.data.type))
   if (selected.length < 2) return null
   const ids = selected.map((n) => n.id)
 

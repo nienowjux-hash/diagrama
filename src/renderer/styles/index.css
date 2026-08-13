@@ -698,6 +698,69 @@ body {
   border: 1.5px solid color-mix(in srgb, var(--group-color) 55%, transparent);
 }
 
+/* Generic drawing shapes — plain draw.io-style primitives, not network
+   devices: no handles, no metadata, excluded from layout/audit/export via
+   isRealDevice() in shared/types.ts. */
+.shape-node {
+  --shape-color: #64748b;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  background: color-mix(in srgb, var(--shape-color) 14%, var(--panel-bg));
+  border: 2px solid var(--shape-color);
+}
+
+.shape-node--rectangle {
+  border-radius: 8px;
+}
+
+.shape-node--ellipse {
+  border-radius: 50%;
+}
+
+.shape-node--selected {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--shape-color) 30%, transparent);
+}
+
+.shape-node__label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  text-align: center;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text);
+  word-break: break-word;
+}
+
+.shape-node--line-wrap {
+  position: relative;
+}
+
+.shape-node__line-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: visible;
+  display: block;
+}
+
+.shape-node--text {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  line-height: 1.3;
+  overflow-wrap: break-word;
+}
+
 .react-flow__resize-control.handle {
   width: 9px !important;
   height: 9px !important;
@@ -999,6 +1062,17 @@ body {
   color: var(--danger);
   font-weight: 600;
   font-size: 10px;
+}
+
+.field--inline {
+  flex-direction: row;
+  align-items: center;
+  gap: 7px;
+}
+
+.field--inline span {
+  color: var(--text);
+  font-weight: 500;
 }
 
 .field-row {

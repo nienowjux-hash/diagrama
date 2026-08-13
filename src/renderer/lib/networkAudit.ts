@@ -1,4 +1,10 @@
-import type { Diagram, DeviceNodeData, ConnectionEdgeData, DeviceType } from '@shared/types'
+import {
+  isRealDevice,
+  type Diagram,
+  type DeviceNodeData,
+  type ConnectionEdgeData,
+  type DeviceType
+} from '@shared/types'
 import { deviceTypeConfig } from './deviceTypeConfig'
 
 export type AuditSeverity = 'warning' | 'info'
@@ -36,7 +42,7 @@ function otherEnd(connection: ConnectionEdgeData, deviceId: string): string {
  */
 export function auditDiagram(diagram: Diagram): AuditFinding[] {
   const findings: AuditFinding[] = []
-  const devices = diagram.devices.filter((d) => d.type !== 'image' && d.type !== 'group')
+  const devices = diagram.devices.filter((d) => isRealDevice(d.type))
   const deviceById = new Map(devices.map((d) => [d.id, d]))
   const connections = diagram.connections
 

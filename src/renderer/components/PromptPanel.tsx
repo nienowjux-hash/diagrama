@@ -4,7 +4,7 @@ import { useDiagramStore } from '../state/diagramStore'
 import { parsePartialDiagram } from '../lib/partialDiagramParser'
 import { findPotentialDuplicates, type DuplicateWarning } from '../lib/duplicateDetection'
 import DuplicateWarningModal from './DuplicateWarningModal'
-import type { ExistingDeviceSummary } from '@shared/types'
+import { isRealDevice, type ExistingDeviceSummary } from '@shared/types'
 import type { LlmDiagram } from '@shared/diagramSchema'
 
 const PROMPT_HISTORY_KEY = 'diagrama:promptHistory'
@@ -71,7 +71,7 @@ export default function PromptPanel({ onOpenSettings }: { onOpenSettings: () => 
 
     const existingDevices: ExistingDeviceSummary[] = useDiagramStore
       .getState()
-      .nodes.filter((n) => n.data.type !== 'image' && n.data.type !== 'group')
+      .nodes.filter((n) => isRealDevice(n.data.type))
       .map((n) => ({ id: n.id, label: n.data.label, type: n.data.type }))
 
     try {

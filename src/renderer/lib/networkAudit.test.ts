@@ -40,10 +40,14 @@ describe('auditDiagram', () => {
     expect(findings.some((f) => f.id === `isolated-${orphan.id}`)).toBe(true)
   })
 
-  it('does not flag image or group nodes as isolated', () => {
+  it('does not flag decorative nodes (image, group, drawing shapes) as isolated', () => {
     const img = device('image', { label: '' })
     const group = device('group', { label: 'Rack' })
-    const findings = auditDiagram(diagram([img, group], []))
+    const rect = device('rectangle', { label: 'Caixa' })
+    const ellipse = device('ellipse', { label: 'Bolha' })
+    const line = device('line', { label: '' })
+    const text = device('text', { label: 'Anotação' })
+    const findings = auditDiagram(diagram([img, group, rect, ellipse, line, text], []))
     expect(findings).toHaveLength(0)
   })
 

@@ -1,4 +1,4 @@
-import type { Diagram } from '@shared/types'
+import { isRealDevice, type Diagram } from '@shared/types'
 import { deviceTypeConfig } from './deviceTypeConfig'
 
 function csvEscape(value: string): string {
@@ -16,7 +16,7 @@ export function buildInventoryCsv(diagram: Diagram): string {
   const lines: string[] = []
   lines.push(row(['Nome', 'Tipo', 'Fabricante / Modelo', 'IP', 'VLANs', 'Portas', 'Notas']))
   for (const device of diagram.devices) {
-    if (device.type === 'image' || device.type === 'group') continue
+    if (!isRealDevice(device.type)) continue
     lines.push(
       row([
         device.label,

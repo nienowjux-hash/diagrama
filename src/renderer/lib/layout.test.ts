@@ -54,4 +54,14 @@ describe('layoutDiagram', () => {
     const childResult = result.find((n) => n.id === 'child')!
     expect(childResult.position).toEqual({ x: 10, y: 10 })
   })
+
+  it.each(['rectangle', 'ellipse', 'line', 'text'] as const)(
+    'leaves %s shapes exactly where the user put them',
+    (type) => {
+      const shape = device('shape', { type, position: { x: 700, y: 700 } })
+      const result = layoutDiagram([device('a'), shape], [])
+      const shapeResult = result.find((n) => n.id === 'shape')!
+      expect(shapeResult.position).toEqual({ x: 700, y: 700 })
+    }
+  )
 })

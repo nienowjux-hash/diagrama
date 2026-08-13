@@ -1,6 +1,7 @@
-// The LLM only ever generates the first 8 — 'image' and 'group' are manual-only,
-// user-added canvas elements (see LlmDeviceType in diagramSchema.ts, which
-// excludes both).
+// The LLM only ever generates the first 8 — everything after 'generic' is a
+// manual-only, user-added canvas element (see LlmDeviceType in
+// diagramSchema.ts, which excludes all of them) with no place in the network
+// graph: no IP/VLAN metadata, no connections, excluded from auto-layout.
 export type DeviceType =
   | 'server'
   | 'nas'
@@ -12,6 +13,27 @@ export type DeviceType =
   | 'generic'
   | 'image'
   | 'group'
+  | 'rectangle'
+  | 'ellipse'
+  | 'line'
+  | 'text'
+
+/** Every manual-only, non-network-device type — the single source of truth
+ * for "is this a real device" checks scattered across layout, audit, CSV
+ * export, search, batch-edit, and the AI context builder. Add new decorative
+ * shape types here, not to each of those call sites individually. */
+export const DECORATIVE_TYPES: readonly DeviceType[] = [
+  'image',
+  'group',
+  'rectangle',
+  'ellipse',
+  'line',
+  'text'
+]
+
+export function isRealDevice(type: DeviceType): boolean {
+  return !DECORATIVE_TYPES.includes(type)
+}
 
 export type ConnectionType = 'ethernet' | 'trunk' | 'vpn' | 'wireless'
 
@@ -47,6 +69,10 @@ export interface DeviceNodeData {
    * device moves together with the group) and makes `position` relative to
    * the group instead of absolute. */
   groupId?: string
+  /** Only meaningful for type === 'line': stroke thickness in px. */
+  strokeWidth?: number
+  /** Only meaningful for type === 'line': draws an arrowhead at the end. */
+  arrow?: boolean
 }
 
 export interface ConnectionEdgeData {

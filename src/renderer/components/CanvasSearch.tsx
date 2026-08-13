@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { Panel, useReactFlow, type Node } from '@xyflow/react'
 import { Search } from 'lucide-react'
 import { useDiagramStore } from '../state/diagramStore'
-import type { DeviceNodeData } from '@shared/types'
+import { isRealDevice, type DeviceNodeData } from '@shared/types'
 
 const RESULT_LIMIT = 8
 
@@ -21,8 +21,7 @@ export default function CanvasSearch() {
     return nodes
       .filter(
         (n) =>
-          n.data.type !== 'image' &&
-          n.data.type !== 'group' &&
+          isRealDevice(n.data.type) &&
           (n.data.label.toLowerCase().includes(q) || n.data.metadata.ip?.toLowerCase().includes(q))
       )
       .slice(0, RESULT_LIMIT)
