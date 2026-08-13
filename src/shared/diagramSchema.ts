@@ -54,7 +54,8 @@ export const deviceNodeSchema = z.object({
   imageDataUrl: z.string().optional(),
   groupId: z.string().optional(),
   strokeWidth: z.number().optional(),
-  arrow: z.boolean().optional()
+  arrow: z.boolean().optional(),
+  points: z.tuple([z.object({ x: z.number(), y: z.number() }), z.object({ x: z.number(), y: z.number() })]).optional()
 })
 
 export const connectionEdgeSchema = z.object({

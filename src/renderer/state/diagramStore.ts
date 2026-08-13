@@ -335,9 +335,19 @@ export const useDiagramStore = create<DiagramState>((set, get) => ({
 
   updateDevice: (id, partial) => {
     commitHistory(get, set)
+    const nextPosition = partial.position as { x: number; y: number } | undefined
     set({
       nodes: get().nodes.map((node) =>
-        node.id === id ? { ...node, data: { ...node.data, ...partial } } : node
+        node.id === id
+          ? {
+              ...node,
+              // Keep the top-level Node.position (what React Flow actually
+              // renders/drags) in sync whenever a caller updates data.position
+              // directly — see the "position-sync gotcha" in CLAUDE.md.
+              position: nextPosition ?? node.position,
+              data: { ...node.data, ...partial }
+            }
+          : node
       )
     })
   },

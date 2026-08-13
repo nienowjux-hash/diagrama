@@ -21,6 +21,25 @@ import {
   Buildings,
   Cpu,
   Image,
+  Stack,
+  GitFork,
+  Radio,
+  Waveform,
+  RadioButton,
+  SimCard,
+  Lightning,
+  CubeTransparent,
+  ShieldStar,
+  Faders,
+  Siren,
+  Warehouse,
+  Fingerprint,
+  LockKey,
+  CarBattery,
+  Television,
+  DeviceMobile,
+  DeviceTablet,
+  Globe,
   type Icon
 } from '@phosphor-icons/react'
 
@@ -53,7 +72,26 @@ export const DEVICE_ICONS: Record<string, Icon> = {
   Scales,
   Buildings,
   Cpu,
-  Image
+  Image,
+  Stack,
+  GitFork,
+  Radio,
+  Waveform,
+  RadioButton,
+  SimCard,
+  Lightning,
+  CubeTransparent,
+  ShieldStar,
+  Faders,
+  Siren,
+  Warehouse,
+  Fingerprint,
+  LockKey,
+  CarBattery,
+  Television,
+  DeviceMobile,
+  DeviceTablet,
+  Globe
 }
 
 /** Reverse lookup: given a DeviceType's default Icon component (from

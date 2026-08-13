@@ -1,4 +1,5 @@
-import { Handle, Position, NodeResizer, type NodeProps, type Node } from '@xyflow/react'
+import { useRef, type PointerEvent } from 'react'
+import { Handle, Position, NodeResizer, useReactFlow, type NodeProps, type Node } from '@xyflow/react'
 import { Router } from 'lucide-react'
 import type { DeviceNodeData } from '@shared/types'
 import { deviceTypeConfig } from '../../lib/deviceTypeConfig'
@@ -7,6 +8,145 @@ import { gradientFromColor } from '../../lib/colorUtils'
 import { useDiagramStore } from '../../state/diagramStore'
 
 type DeviceNodeType = Node<DeviceNodeData>
+type LinePoints = [{ x: number; y: number }, { x: number; y: number }]
+
+/** Padding, in canvas px, added around a line's tight bounding box so the two
+ * endpoint grab handles have room to render/be grabbed without clipping at
+ * the wrapper div's edge. Purely a rendering concern — see the `points` doc
+ * comment in shared/types.ts for the coordinate-frame invariant this relies on. */
+const LINE_PAD = 16
+
+function resolveLinePoints(data: DeviceNodeData): LinePoints {
+  if (data.points) return data.points
+  const w = data.size?.width ?? 160
+  const h = data.size?.height ?? 2
+  return [
+    { x: 0, y: 0 },
+    { x: w, y: h }
+  ]
+}
+
+/**
+ * Free-form line: unlike rectangle/ellipse/text, a line resized via
+ * NodeResizer's 4 corner handles could only ever stretch a fixed top-left to
+ * bottom-right diagonal — dragging a corner changed its length but could
+ * never flip its direction (e.g. no way to reach an upward-sloping line from
+ * a downward one), which read as "stuck"/static. This renders two
+ * independently-draggable endpoint handles instead, each freely movable in
+ * any direction; `updateDevice` keeps `points` (relative to `data.position`,
+ * bounding-box-normalized so both coordinates stay >= 0) and `position` in
+ * sync on every move — see the math in the pointermove handler below.
+ */
+function LineNode({ id, data, selected }: { id: string; data: DeviceNodeData; selected?: boolean }) {
+  const updateDevice = useDiagramStore((s) => s.updateDevice)
+  const { screenToFlowPosition } = useReactFlow()
+  const dragRef = useRef<{
+    index: 0 | 1
+    startFlow: { x: number; y: number }
+    startPoints: LinePoints
+    startPosition: { x: number; y: number }
+  } | null>(null)
+
+  const points = resolveLinePoints(data)
+  const stroke = data.color ?? deviceTypeConfig.line.color
+  const strokeWidth = data.strokeWidth ?? 3
+  const maxX = Math.max(points[0].x, points[1].x)
+  const maxY = Math.max(points[0].y, points[1].y)
+  const width = maxX + LINE_PAD * 2
+  const height = maxY + LINE_PAD * 2
+  const local: LinePoints = [
+    { x: points[0].x + LINE_PAD, y: points[0].y + LINE_PAD },
+    { x: points[1].x + LINE_PAD, y: points[1].y + LINE_PAD }
+  ]
+  const markerId = `line-arrow-${id}`
+
+  const onEndpointPointerDown = (index: 0 | 1) => (e: PointerEvent<SVGCircleElement>) => {
+    e.stopPropagation()
+    e.currentTarget.setPointerCapture(e.pointerId)
+    dragRef.current = {
+      index,
+      startFlow: screenToFlowPosition({ x: e.clientX, y: e.clientY }),
+      startPoints: points,
+      startPosition: data.position
+    }
+  }
+  const onEndpointPointerMove = (e: PointerEvent<SVGCircleElement>) => {
+    const drag = dragRef.current
+    if (!drag) return
+    e.stopPropagation()
+    const current = screenToFlowPosition({ x: e.clientX, y: e.clientY })
+    const dx = current.x - drag.startFlow.x
+    const dy = current.y - drag.startFlow.y
+    const moved: LinePoints = [{ ...drag.startPoints[0] }, { ...drag.startPoints[1] }]
+    moved[drag.index] = {
+      x: drag.startPoints[drag.index].x + dx,
+      y: drag.startPoints[drag.index].y + dy
+    }
+    const minX = Math.min(moved[0].x, moved[1].x)
+    const minY = Math.min(moved[0].y, moved[1].y)
+    const normalized: LinePoints = [
+      { x: moved[0].x - minX, y: moved[0].y - minY },
+      { x: moved[1].x - minX, y: moved[1].y - minY }
+    ]
+    updateDevice(id, {
+      position: { x: drag.startPosition.x + minX, y: drag.startPosition.y + minY },
+      points: normalized,
+      size: {
+        width: Math.max(normalized[0].x, normalized[1].x),
+        height: Math.max(normalized[0].y, normalized[1].y)
+      }
+    })
+  }
+  const onEndpointPointerUp = (e: PointerEvent<SVGCircleElement>) => {
+    e.stopPropagation()
+    dragRef.current = null
+  }
+
+  return (
+    <div className={`shape-node--line-wrap${selected ? ' shape-node--selected' : ''}`} style={{ width, height }}>
+      <svg className="shape-node__line-svg" width={width} height={height}>
+        {data.arrow && (
+          <defs>
+            <marker id={markerId} markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+              <path d="M0,0 L8,4 L0,8 Z" fill={stroke} />
+            </marker>
+          </defs>
+        )}
+        <line
+          x1={local[0].x}
+          y1={local[0].y}
+          x2={local[1].x}
+          y2={local[1].y}
+          stroke={stroke}
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+          markerEnd={data.arrow ? `url(#${markerId})` : undefined}
+        />
+        {selected &&
+          local.map((p, index) => (
+            <g key={index}>
+              {/* Larger transparent circle as the actual pointer target — the
+                  visible dot stays small/tidy, but grabbing an endpoint at
+                  typical canvas zoom needs more forgiveness than its painted
+                  radius alone would give (same reasoning as the enlarged
+                  NodeResizer hit area in index.css). */}
+              <circle
+                className="shape-node__line-handle-hit nodrag nopan"
+                cx={p.x}
+                cy={p.y}
+                r={12}
+                fill="transparent"
+                onPointerDown={onEndpointPointerDown(index as 0 | 1)}
+                onPointerMove={onEndpointPointerMove}
+                onPointerUp={onEndpointPointerUp}
+              />
+              <circle className="shape-node__line-handle" cx={p.x} cy={p.y} r={5} />
+            </g>
+          ))}
+      </svg>
+    </div>
+  )
+}
 
 const MIN_SIZE = { width: 160, height: 64 }
 const MIN_IMAGE_SIZE = { width: 100, height: 80 }
@@ -78,44 +218,7 @@ export default function DeviceNode({ id, data, selected }: NodeProps<DeviceNodeT
   }
 
   if (data.type === 'line') {
-    const stroke = data.color ?? config.color
-    const strokeWidth = data.strokeWidth ?? 3
-    const w = data.size?.width ?? 160
-    const h = data.size?.height ?? 2
-    const markerId = `line-arrow-${id}`
-    return (
-      <div
-        className={`shape-node--line-wrap${selected ? ' shape-node--selected' : ''}`}
-        style={{ width: w, height: h }}
-      >
-        <NodeResizer
-          isVisible={selected}
-          minWidth={20}
-          minHeight={1}
-          lineStyle={{ pointerEvents: 'none' }}
-          onResizeEnd={(_e, params) => updateDevice(id, { size: { width: params.width, height: params.height } })}
-        />
-        <svg className="shape-node__line-svg" width={w} height={h}>
-          {data.arrow && (
-            <defs>
-              <marker id={markerId} markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
-                <path d="M0,0 L8,4 L0,8 Z" fill={stroke} />
-              </marker>
-            </defs>
-          )}
-          <line
-            x1={0}
-            y1={0}
-            x2={w}
-            y2={h}
-            stroke={stroke}
-            strokeWidth={strokeWidth}
-            strokeLinecap="round"
-            markerEnd={data.arrow ? `url(#${markerId})` : undefined}
-          />
-        </svg>
-      </div>
-    )
+    return <LineNode id={id} data={data} selected={selected} />
   }
 
   if (data.type === 'text') {

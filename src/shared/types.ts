@@ -73,6 +73,14 @@ export interface DeviceNodeData {
   strokeWidth?: number
   /** Only meaningful for type === 'line': draws an arrowhead at the end. */
   arrow?: boolean
+  /** Only meaningful for type === 'line': the two endpoints, relative to
+   * `position` (so normal node dragging — which only moves `position` — keeps
+   * the line's shape intact for free). Both coordinates may be negative;
+   * `position`/`size` are kept normalized to their bounding box by whichever
+   * code moves an endpoint. Absent on lines created before this field existed
+   * (or still using the legacy width/height-only diagonal), which fall back
+   * to a top-left-to-bottom-right diagonal derived from `size`. */
+  points?: [{ x: number; y: number }, { x: number; y: number }]
 }
 
 export interface ConnectionEdgeData {

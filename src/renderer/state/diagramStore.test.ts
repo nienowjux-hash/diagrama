@@ -17,6 +17,30 @@ describe('diagramStore basic CRUD', () => {
     expect(state.dirty).toBe(true)
   })
 
+  it('updateDevice syncs the top-level Node.position when data.position is set directly', () => {
+    // Regression guard for the "position-sync gotcha" (see CLAUDE.md): the
+    // free-form line endpoint drag in DeviceNode.tsx writes new positions via
+    // updateDevice, not onNodesChange, so this path must keep both in sync
+    // itself or the line would revert to its old spot on save/export.
+    useDiagramStore.getState().addDevice('server', { x: 0, y: 0 })
+    const id = useDiagramStore.getState().nodes[0].id
+
+    useDiagramStore.getState().updateDevice(id, { position: { x: 42, y: 99 } })
+
+    const node = useDiagramStore.getState().nodes[0]
+    expect(node.position).toEqual({ x: 42, y: 99 })
+    expect(node.data.position).toEqual({ x: 42, y: 99 })
+  })
+
+  it('updateDevice leaves Node.position untouched when the partial has no position', () => {
+    useDiagramStore.getState().addDevice('server', { x: 10, y: 20 })
+    const id = useDiagramStore.getState().nodes[0].id
+
+    useDiagramStore.getState().updateDevice(id, { label: 'Novo nome' })
+
+    expect(useDiagramStore.getState().nodes[0].position).toEqual({ x: 10, y: 20 })
+  })
+
   it('removeDevice removes the node and any edges touching it', () => {
     useDiagramStore.getState().addDevice('server', { x: 0, y: 0 })
     useDiagramStore.getState().addDevice('switch', { x: 100, y: 100 })
@@ -121,8 +145,7 @@ describe('diagramStore group nesting', () => {
     expect(useDiagramStore.getState().nodes.find((n) => n.id === deviceId)!.data.groupId).toBe(group.id)
 
     // Move it far away (outside the group's default 420x300 box) via the same
-    // path a real drag uses — updateDevice only touches `.data`, not the
-    // top-level `.position` that reparentIfDropped's containment math reads.
+    // path a real drag uses.
     useDiagramStore.getState().onNodesChange([{ id: deviceId, type: 'position', position: { x: 5000, y: 5000 } }])
     useDiagramStore.getState().reparentIfDropped(deviceId)
     expect(useDiagramStore.getState().nodes.find((n) => n.id === deviceId)!.data.groupId).toBeUndefined()

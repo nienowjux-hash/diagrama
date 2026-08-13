@@ -47,6 +47,56 @@ export const DEVICE_PRESETS: DevicePreset[] = [
     iconKey: 'Scales'
   },
   { key: 'site', type: 'generic', label: 'Filial / Site', vendorModel: 'Site', iconKey: 'Buildings' },
+  { key: 'core-switch', type: 'switch', label: 'Core Switch', vendorModel: 'Core Switch', iconKey: 'Stack' },
+  { key: 'poe-switch', type: 'switch', label: 'Switch PoE', vendorModel: 'PoE', iconKey: 'Faders' },
+  { key: 'outdoor-ap', type: 'ap', label: 'Access Point Outdoor', vendorModel: 'AP Outdoor', iconKey: 'Radio' },
+  { key: 'ptp-radio', type: 'ap', label: 'Rádio Ponto a Ponto', vendorModel: 'Rádio PtP', iconKey: 'Waveform' },
+  {
+    key: 'wireless-controller',
+    type: 'generic',
+    label: 'Controladora Wireless',
+    vendorModel: 'Controladora',
+    iconKey: 'RadioButton'
+  },
+  { key: 'lte-modem', type: 'generic', label: 'Modem 4G/LTE', vendorModel: 'Modem 4G', iconKey: 'SimCard' },
+  { key: 'ont', type: 'generic', label: 'ONU/ONT (Fibra)', vendorModel: 'ONT', iconKey: 'Lightning' },
+  {
+    key: 'hypervisor',
+    type: 'server',
+    label: 'Host de Virtualização',
+    vendorModel: 'Hypervisor',
+    iconKey: 'CubeTransparent'
+  },
+  {
+    key: 'domain-controller',
+    type: 'server',
+    label: 'Controlador de Domínio',
+    vendorModel: 'AD/DC',
+    iconKey: 'ShieldStar'
+  },
+  { key: 'dns-server', type: 'server', label: 'Servidor DNS/DHCP', vendorModel: 'DNS/DHCP', iconKey: 'Globe' },
+  { key: 'backup', type: 'nas', label: 'Appliance de Backup', vendorModel: 'Backup', iconKey: 'Stack' },
+  { key: 'vpn-concentrator', type: 'firewall', label: 'Concentrador VPN', vendorModel: 'VPN', iconKey: 'GitFork' },
+  { key: 'ips', type: 'firewall', label: 'IDS/IPS', vendorModel: 'IDS/IPS', iconKey: 'Siren' },
+  { key: 'rack', type: 'generic', label: 'Rack / Datacenter', vendorModel: 'Rack', iconKey: 'Warehouse' },
+  {
+    key: 'access-control',
+    type: 'generic',
+    label: 'Controle de Acesso',
+    vendorModel: 'Catraca/Leitor',
+    iconKey: 'Fingerprint'
+  },
+  {
+    key: 'electronic-lock',
+    type: 'generic',
+    label: 'Fechadura Eletrônica',
+    vendorModel: 'Fechadura',
+    iconKey: 'LockKey'
+  },
+  { key: 'generator', type: 'generic', label: 'Gerador', vendorModel: 'Gerador', iconKey: 'CarBattery' },
+  { key: 'smart-tv', type: 'client', label: 'TV / Display', vendorModel: 'Smart TV', iconKey: 'Television' },
+  { key: 'smartphone', type: 'client', label: 'Smartphone', vendorModel: 'Smartphone', iconKey: 'DeviceMobile' },
+  { key: 'tablet', type: 'client', label: 'Tablet', vendorModel: 'Tablet', iconKey: 'DeviceTablet' },
   { key: 'generic', type: 'generic', label: 'Dispositivo genérico', iconKey: 'Cpu' }
 ]
 
